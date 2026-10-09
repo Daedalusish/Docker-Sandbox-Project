@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "image": "node:26-bookworm",
+  "remoteUser": "node",
+  // This repo holds several examples. In a standalone repo, delete this line.
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
+  // Read-only view of the main repo (slots live in slots/<name>), so the slot can fetch and switch branches
+  "mounts": ["source=${localWorkspaceFolder}/../../.git,target=/main.git,type=bind,readonly"],
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "postCreateCommand": "npm ci"
+}

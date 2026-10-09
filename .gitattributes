@@ -1,0 +1,2 @@
+# LF everywhere, so files behave the same in Linux containers on any OS
+* text=auto eol=lf

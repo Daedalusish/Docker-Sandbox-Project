@@ -1,0 +1,22 @@
+{
+  "name": "backend (strict)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  // This repo holds several examples. In a standalone repo, delete this line.
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/backend",
+  // Strict: no access to the main repo. Updates can only arrive as git bundles.
+  // Join the database's network. Start backend/compose.yaml first.
+  "runArgs": ["--network=sandbox-demo"],
+  "containerEnv": {
+    "ConnectionStrings__Database": "Host=sandbox-demo-db;Username=postgres;Password=postgres"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csharp"]
+    }
+  },
+  "postCreateCommand": "dotnet restore"
+}

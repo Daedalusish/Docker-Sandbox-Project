@@ -1,0 +1,18 @@
+# A shared development database, standing in for "something running locally".
+# Start it once, before any backend slot:  docker compose up -d  (or: podman compose up -d)
+# Slots reach it by name over the "sandbox-demo" network. No ports are opened on your machine.
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: sandbox-demo-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+networks:
+  default:
+    name: sandbox-demo
+
+volumes:
+  db-data:
