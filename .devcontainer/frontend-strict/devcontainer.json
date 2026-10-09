@@ -2,8 +2,10 @@
   "name": "frontend (strict)",
   "image": "node:26-bookworm",
   "remoteUser": "node",
-  // This repo holds several examples. In a standalone repo, delete this line.
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
+  // The whole slot is mounted at /workspace. This repo holds several examples,
+  // so open one of them; in a standalone repo, use /workspace.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/frontend",
   // Strict: no access to the main repo. Updates can only arrive as git bundles.
   "features": {
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}

@@ -1,8 +1,10 @@
 {
   "name": "backend (strict)",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
-  // This repo holds several examples. In a standalone repo, delete this line.
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/backend",
+  // The whole slot is mounted at /workspace. This repo holds several examples,
+  // so open one of them; in a standalone repo, use /workspace.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/backend",
   // Strict: no access to the main repo. Updates can only arrive as git bundles.
   // Join the database's network. Start backend/compose.yaml first.
   "runArgs": ["--network=sandbox-demo"],
