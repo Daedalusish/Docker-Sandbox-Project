@@ -7,8 +7,9 @@
   "workspaceFolder": "/workspace/backend",
   // Read-only view of the main repo (slots live in slots/<name>), so the slot can fetch and switch branches
   "mounts": ["source=${localWorkspaceFolder}/../../.git,target=/main.git,type=bind,readonly"],
-  // Join the database's network. Start backend/compose.yaml first.
-  "runArgs": ["--network=sandbox-demo"],
+  // Join the database's network (start backend/compose.yaml first),
+  // and block sudo and other setuid programs, so the agent can't become root
+  "runArgs": ["--network=sandbox-demo", "--security-opt=no-new-privileges"],
   "containerEnv": {
     "ConnectionStrings__Database": "Host=sandbox-demo-db;Username=postgres;Password=postgres"
   },

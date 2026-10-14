@@ -8,6 +8,8 @@
   "workspaceFolder": "/workspace/frontend",
   // Read-only view of the main repo (slots live in slots/<name>), so the slot can fetch and switch branches
   "mounts": ["source=${localWorkspaceFolder}/../../.git,target=/main.git,type=bind,readonly"],
+  // Block sudo and other setuid programs, so the agent can't become root
+  "runArgs": ["--security-opt=no-new-privileges"],
   "features": {
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },

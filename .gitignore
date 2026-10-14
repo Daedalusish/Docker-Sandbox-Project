@@ -1,2 +1,5 @@
 # Task clones, one per slot
 /slots
+
+# Presentation notes and slides, kept out of the repo for now
+/presentation

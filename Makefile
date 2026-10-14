@@ -1,7 +1,7 @@
 # Run `make` to see the commands.
 
-# Use ENGINE=podman if you use Podman
-ENGINE ?= docker
+# Uses docker if it's installed, otherwise podman. Override with ENGINE=...
+ENGINE ?= $(if $(shell command -v docker),docker,podman)
 
 help:
 	@echo "Database"
@@ -12,6 +12,8 @@ help:
 	@echo "  make backend-agent name=NAME             backend agent"
 	@echo "  make frontend-agent-strict name=NAME     frontend agent that can't see the main repo"
 	@echo "  make backend-agent-strict name=NAME      backend agent that can't see the main repo"
+	@echo "  make frontend-agent-worktree name=NAME   frontend agent as a worktree (the old way)"
+	@echo "  make backend-agent-worktree name=NAME    backend agent as a worktree (the old way)"
 	@echo "Slots"
 	@echo "  make list                                show all slots"
 	@echo "  make start name=SLOT                     start a stopped slot"
@@ -34,32 +36,56 @@ db-down:
 
 
 # ---- Agents ----
+# The first line of each stops if name is missing. Backend agents start the database first.
 
 # Create and start a frontend agent: make frontend-agent name=alpha
 frontend-agent:
+	@test -n "$(name)"
 	git clone . slots/frontend-$(name)
 	git -C slots/frontend-$(name) remote set-url origin /main.git
 	git -C slots/frontend-$(name) config user.name "Claude (frontend-$(name))"
 	devpod up ./slots/frontend-$(name) --devcontainer-path .devcontainer/frontend/devcontainer.json
 
-# Create and start a backend agent: make backend-agent name=alpha
-backend-agent:
+# Create and start a backend agent, opened in Rider: make backend-agent name=alpha
+backend-agent: db-up
+	@test -n "$(name)"
 	git clone . slots/backend-$(name)
 	git -C slots/backend-$(name) remote set-url origin /main.git
 	git -C slots/backend-$(name) config user.name "Claude (backend-$(name))"
-	devpod up ./slots/backend-$(name) --devcontainer-path .devcontainer/backend/devcontainer.json
+	devpod up ./slots/backend-$(name) --devcontainer-path .devcontainer/backend/devcontainer.json --ide rider
 
 # Like frontend-agent, but the slot can't see the main repo
 frontend-agent-strict:
+	@test -n "$(name)"
 	git clone . slots/frontend-$(name)
 	git -C slots/frontend-$(name) config user.name "Claude (frontend-$(name))"
 	devpod up ./slots/frontend-$(name) --devcontainer-path .devcontainer/frontend-strict/devcontainer.json
 
 # Like backend-agent, but the slot can't see the main repo
-backend-agent-strict:
+backend-agent-strict: db-up
+	@test -n "$(name)"
 	git clone . slots/backend-$(name)
 	git -C slots/backend-$(name) config user.name "Claude (backend-$(name))"
-	devpod up ./slots/backend-$(name) --devcontainer-path .devcontainer/backend-strict/devcontainer.json
+	devpod up ./slots/backend-$(name) --devcontainer-path .devcontainer/backend-strict/devcontainer.json --ide rider
+
+
+# The old way, for comparison: the slot is a git worktree that shares this repo's .git.
+# Its commits land here straight away, on branch agent/NAME. No fetch needed, but no boundary either.
+# The two printf lines make git's pointer files relative, so they work both here and in the container.
+# Worktrees share this repo's git config, so the agent can't get its own git name.
+frontend-agent-worktree:
+	@test -n "$(name)"
+	git worktree add -b agent/$(name) slots/frontend-$(name)
+	printf 'gitdir: ../../.git/worktrees/frontend-$(name)\n' > slots/frontend-$(name)/.git
+	printf '../../../slots/frontend-$(name)/.git\n' > .git/worktrees/frontend-$(name)/gitdir
+	devpod up ./slots/frontend-$(name) --devcontainer-path .devcontainer/frontend-worktree/devcontainer.json
+
+backend-agent-worktree: db-up
+	@test -n "$(name)"
+	git worktree add -b agent/$(name) slots/backend-$(name)
+	printf 'gitdir: ../../.git/worktrees/backend-$(name)\n' > slots/backend-$(name)/.git
+	printf '../../../slots/backend-$(name)/.git\n' > .git/worktrees/backend-$(name)/gitdir
+	devpod up ./slots/backend-$(name) --devcontainer-path .devcontainer/backend-worktree/devcontainer.json --ide rider
 
 
 # ---- Slots (use the full slot name, e.g. frontend-alpha) ----
@@ -82,6 +108,7 @@ remove:
 	@test -n "$(name)"
 	devpod delete $(name)
 	rm -rf slots/$(name)
+	git worktree prune
 
 
 # ---- Moving work in and out ----
@@ -91,6 +118,6 @@ fetch:
 	git fetch ./slots/$(name) $(branch):$(branch)
 
 # Give a strict slot the latest branches: make bundle name=frontend-alpha
-# Then, inside the slot: git fetch .git/main.bundle 'refs/heads/*:refs/remotes/origin/*'
+# Then, inside the slot: git fetch /workspace/.git/main.bundle 'refs/heads/*:refs/remotes/origin/*'
 bundle:
 	git bundle create slots/$(name)/.git/main.bundle --all

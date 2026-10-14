@@ -1,0 +1,27 @@
+{
+  "name": "frontend (worktree)",
+  "image": "node:26-bookworm",
+  "remoteUser": "node",
+  // The whole slot is mounted at /workspace. This repo holds several examples,
+  // so open one of them; in a standalone repo, use /workspace.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/frontend",
+  // Worktree: the slot shares the main repo's .git, mounted READ-WRITE.
+  // Its .git file points to ../../.git, which resolves to /.git in here. For comparison only.
+  "mounts": ["source=${localWorkspaceFolder}/../../.git,target=/.git,type=bind"],
+  // Block sudo and other setuid programs, so the agent can't become root
+  "runArgs": ["--security-opt=no-new-privileges"],
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "postCreateCommand": "npm ci"
+}

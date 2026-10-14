@@ -1,0 +1,27 @@
+{
+  "name": "backend (worktree)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  // The whole slot is mounted at /workspace. This repo holds several examples,
+  // so open one of them; in a standalone repo, use /workspace.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/backend",
+  // Worktree: the slot shares the main repo's .git, mounted READ-WRITE.
+  // Its .git file points to ../../.git, which resolves to /.git in here. For comparison only.
+  "mounts": ["source=${localWorkspaceFolder}/../../.git,target=/.git,type=bind"],
+  // Join the database's network (start backend/compose.yaml first),
+  // and block sudo and other setuid programs, so the agent can't become root
+  "runArgs": ["--network=sandbox-demo", "--security-opt=no-new-privileges"],
+  "containerEnv": {
+    "ConnectionStrings__Database": "Host=sandbox-demo-db;Username=postgres;Password=postgres"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csharp"]
+    }
+  },
+  "postCreateCommand": "dotnet restore"
+}
