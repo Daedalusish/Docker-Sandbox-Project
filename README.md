@@ -16,7 +16,14 @@ presentation/   notes
    Windows: run everything from Git Bash.
 2. Point DevPod at your engine: `devpod provider add docker`
    (Podman: `devpod provider set-options docker -o DOCKER_PATH=podman`).
-3. Turn off DevPod's git credential and SSH agent forwarding (`devpod context options`).
+3. Stop DevPod handing your credentials to the agents. It's on by default: your SSH keys, git logins and
+   registry logins would be usable inside every slot. Check with `devpod context options` afterwards.
+   ```bash
+   devpod context set-options \
+     -o SSH_AGENT_FORWARDING=false -o SSH_ADD_PRIVATE_KEYS=false \
+     -o SSH_INJECT_GIT_CREDENTIALS=false -o SSH_INJECT_DOCKER_CREDENTIALS=false \
+     -o GIT_SSH_SIGNATURE_FORWARDING=false
+   ```
 4. **Linux with rootless Podman:** add `userns = "keep-id"` under `[containers]`
    in `~/.config/containers/containers.conf`.
 5. **Linux with SELinux (Fedora, Bazzite, …):** let containers read the repo, once:
